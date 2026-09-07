@@ -8,22 +8,22 @@ import logging
 
 class ClientDataTool:
 
-    @classmethod
-    def split_data(cls, data:bytes):
-        """
-        分割客户端请求数据
-        Args:
-            data: 数据
-
-        Returns:
-
-        """
-        sign_byte_head = data[0]
-        header_bytes = data[1:19]
-        check_byte = data[-2]
-        sign_byte_tail = data[-1]
-        data_body_bytes = data[19:-2]
-        logging.info(f"标志位(头): {sign_byte_head}, 消息头: {header_bytes}, 校验位: {check_byte}, 校验位(尾): {sign_byte_tail}, 消息体: {data_body_bytes}")
+    # @classmethod
+    # def split_data(cls, data:bytes):
+    #     """
+    #     分割客户端请求数据
+    #     Args:
+    #         data: 数据
+    #
+    #     Returns:
+    #
+    #     """
+    #     sign_byte_head = data[0]
+    #     header_bytes = data[1:19]
+    #     check_byte = data[-2]
+    #     sign_byte_tail = data[-1]
+    #     data_body_bytes = data[19:-2]
+    #     logging.info(f"标志位(头): {sign_byte_head}, 消息头: {header_bytes}, 校验位: {check_byte}, 校验位(尾): {sign_byte_tail}, 消息体: {data_body_bytes}")
 
 
     @staticmethod
@@ -49,7 +49,6 @@ class ClientDataTool:
         return inner
 
 class JtClientFunction:
-
 
     @classmethod
     @ClientDataTool.register(0x0001)
