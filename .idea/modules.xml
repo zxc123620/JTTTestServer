@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/JTTTestServer.iml" filepath="$PROJECT_DIR$/.idea/JTTTestServer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/jtttestserver.iml" filepath="$PROJECT_DIR$/.idea/jtttestserver.iml" />
     </modules>
   </component>
 </project>
