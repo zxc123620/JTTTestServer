@@ -8,6 +8,8 @@ import struct
 from dataclasses import dataclass
 from typing import Optional
 
+from jtttestserver.data_function import DataFunction
+
 
 @dataclass
 class MsgBodyProperty:
@@ -19,6 +21,7 @@ class MsgBodyProperty:
     subcontracting_flag: int  # 子包标志
     version_flag: int  # 版本标志
     other: int  # 保留
+
 
 @dataclass
 class JTHeaderInfo:
@@ -60,16 +63,24 @@ class JT808MessageParser:
         Returns:
 
         """
+        # 数据转义解码
+        data = DataFunction.data_de_escape(data)
         # 标志位(头)
         sign_byte_head = struct.unpack("B", data[:1])[0]
         # 消息头 解析
         header_info, last_index = cls.parser_header(data[1:])
-        # 校验位
-        check_byte = data[-2]
-        # 校验位(尾)
-        sign_byte_tail = data[-1]
+        # 消息体长度
+        msg_body_length = header_info.body_property.msg_body_length
+        # 消息ID
+        msg_id = header_info.msg_id
         # 消息体
-        data_body_bytes = data[19:-2]
+        data_body_bytes = data[last_index:last_index + msg_body_length]
+        last_index = last_index + msg_body_length
+        # 校验位 (后面再校验)
+        check_byte = struct.unpack("B", data[last_index:last_index + 1])[0]
+        last_index += 1
+        # 校验位(尾)
+        sign_byte_tail = struct.unpack("B", data[last_index:last_index + 1])[0]
         # logging.info(
         #     f"标志位(头): {sign_byte_head}, 消息头: {header_bytes}, 校验位: {check_byte}, 校验位(尾): {sign_byte_tail}, 消息体: {data_body_bytes}")
 
@@ -79,9 +90,7 @@ class JT808MessageParser:
         解析消息头
         Args:
             data: 消息数据, 截断了从消息头开始的数据
-
         Returns:
-
         """
         last_index = 17
         # 【消息ID】2字节
@@ -121,18 +130,21 @@ class JT808MessageParser:
         Returns:
         """
         data = struct.unpack("> H", data)[0]
-        # 提取消息体长度
+        # 提取消息体长度（位0-9，10位）
         msg_body_length = data & 0x3FF
-        # 加密方式
-        data_encryption = data >> 10 & 0x03
-        # 子包标志
-        subcontracting_flag = data >> 13 & 0x01
-        # 版本标志
-        version_flag = data >> 14 & 0x01
-        # 保留
-        other = data>> 15 & 0x01
-        # 保留
-        msg_body_property = MsgBodyProperty(msg_body_length=msg_body_length, data_encryption=data_encryption,
-                                            subcontracting_flag=subcontracting_flag, version_flag=version_flag,
-                                            other=other)
+        # 加密方式（位10-12，3位） 修正为 0x07
+        data_encryption = (data >> 10) & 0x07
+        # 子包标志（位13，1位）
+        subcontracting_flag = (data >> 13) & 0x01
+        # 版本标志（位14，1位）
+        version_flag = (data >> 14) & 0x01
+        # 保留（位15，1位）
+        other = (data >> 15) & 0x01
+        msg_body_property = MsgBodyProperty(
+            msg_body_length=msg_body_length,
+            data_encryption=data_encryption,
+            subcontracting_flag=subcontracting_flag,
+            version_flag=version_flag,
+            other=other
+        )
         return msg_body_property
