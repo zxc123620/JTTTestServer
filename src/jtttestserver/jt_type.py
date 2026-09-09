@@ -3,8 +3,10 @@
 # Time: 2026/9/7 17:43
 # Author:zhouxiaochuan
 # Description:
+from enum import Enum
 
-class ReplyType:
+
+class Jt808ReplyType(Enum):
     SUCCESS = 0
     FAIL = 1
     ERROR = 2

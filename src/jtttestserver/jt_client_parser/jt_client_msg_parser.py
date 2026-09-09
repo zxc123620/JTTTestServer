@@ -5,53 +5,12 @@
 # Description:
 import logging
 import struct
-from dataclasses import dataclass
-from typing import Optional
 
 from jtttestserver.data_function import DataFunction
+from jtttestserver.jt_client_parser.client_obj.msg_header_info import JT808HeaderInfo, JT808MsgBodyProperty
 
 
-@dataclass
-class MsgBodyProperty:
-    """
-    消息体属性
-    """
-    msg_body_length: int  # 消息体长度
-    data_encryption: int  # 数据加密
-    subcontracting_flag: int  # 子包标志
-    version_flag: int  # 版本标志
-    other: int  # 保留
-
-
-@dataclass
-class JTHeaderInfo:
-    """
-    消息头信息
-    """
-    msg_id: int  # 消息ID
-    body_property: MsgBodyProperty  # 消息体属性
-    version: int  # 版本号
-    phone_number: bytes  # 手机号
-    msg_serial_number: int  # 消息序列号
-    msg_package_total: Optional[int] = None  # 消息包总数
-    msg_package_current_number: Optional[int] = None  # 消息包当前号
-
-
-
-@dataclass
-class Jt808MsgInfo:
-    """
-    JT808消息信息
-    """
-    sign_byte_head: bytes  # 标志位(头)
-    header_bytes: bytes  # 消息头
-    data_body_bytes: bytes  # 消息体
-    check_byte: bytes  # 校验位
-    sign_byte_tail: bytes  # 校验位(尾)
-
-
-
-class JT808MessageParser:
+class JT808ClientMessageParser:
 
     @classmethod
     def parser(cls, data: bytes):
@@ -64,7 +23,7 @@ class JT808MessageParser:
 
         """
         # 数据转义解码
-        data = DataFunction.data_de_escape(data)
+        data = DataFunction.de_escape(data)
         # 标志位(头)
         sign_byte_head = struct.unpack("B", data[:1])[0]
         # 消息头 解析
@@ -101,12 +60,12 @@ class JT808MessageParser:
         # 【版本号】1字节 【手机号】10字节 【消息序列号】2字节
 
         version, phone_number, msg_serial_number = struct.unpack("> B 10s H", data[4:17])
-        header_info = JTHeaderInfo(
+        header_info = JT808HeaderInfo(
             msg_id=msg_id,
             body_property=data_body_property,
             version=version,
             phone_number=phone_number,
-            msg_serial_number=msg_serial_number,
+            msg_sequence_number=msg_serial_number,
 
         )
         # 【消息属性】2字节  【消息包总数】2字节  【消息包当前号】2字节
@@ -124,7 +83,7 @@ class JT808MessageParser:
     @classmethod
     def parser_data_body_property(cls, data: bytes):
         """
-        解析消息体属性
+        解析消息体属性（他在消息头里面）
         Args:
             data: 消息数据, 截断了从消息体属性字节开始的数据到
         Returns:
@@ -140,7 +99,7 @@ class JT808MessageParser:
         version_flag = (data >> 14) & 0x01
         # 保留（位15，1位）
         other = (data >> 15) & 0x01
-        msg_body_property = MsgBodyProperty(
+        msg_body_property = JT808MsgBodyProperty(
             msg_body_length=msg_body_length,
             data_encryption=data_encryption,
             subcontracting_flag=subcontracting_flag,
