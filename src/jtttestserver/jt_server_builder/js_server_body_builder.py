@@ -5,6 +5,7 @@
 # Description:
 import datetime
 import struct
+import uuid
 from dataclasses import dataclass
 
 from jtttestserver.jt_type import Jt808ReplyType
@@ -19,12 +20,11 @@ class Jt808ServerMsgBodyBuilder:
         """
         将消息体转换为bytes
         Returns:
-
         """
         pass
 
 @dataclass
-class Jt808ServerBasicReplyBuilder(Jt808ServerMsgBodyBuilder):
+class Jt808ServerBasicReplyBodyBuilder(Jt808ServerMsgBodyBuilder):
     """
     服务器基本回复构建器
     """
@@ -37,13 +37,32 @@ class Jt808ServerBasicReplyBuilder(Jt808ServerMsgBodyBuilder):
 
 
 @dataclass
-class Jt808ServerTimeReplyBuilder(Jt808ServerMsgBodyBuilder):
+class Jt808ServerTimeReplyBodyBuilder(Jt808ServerMsgBodyBuilder):
     """
     服务器时间回复构建器
+    0x8004
     """
-    reply_sequence_number: str = datetime.datetime.now().strftime("%y%m%d%H%M%S")
+    server_time: str = datetime.datetime.now().strftime("%y%m%d%H%M%S")
 
     def to_bytes(self) -> bytes:
-        return struct.pack("> 6s", bytes.fromhex(self.reply_sequence_number))
+        return struct.pack("> 6s", bytes.fromhex(self.server_time))
+
+
+@dataclass
+class Jt808ServerRegisterReplyBodyBuilder(Jt808ServerMsgBodyBuilder):
+    """
+    服务器注册回复构建器
+    0x8100
+    """
+    reply_sequence_number: int  # 应答流水号
+    result: Jt808ReplyType
+    authorization_code: str  # 授权码
+
+    def to_bytes(self) -> bytes:
+        data = bytearray()
+        data.extend(struct.pack("> H B ", self.reply_sequence_number, self.result.value))
+        data.extend(self.authorization_code.encode("gbk"))
+        return data
+
 
 

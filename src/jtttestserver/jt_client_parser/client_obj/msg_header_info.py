@@ -7,10 +7,11 @@ import struct
 from dataclasses import dataclass
 from typing import Optional
 
+from jtttestserver.jt_client_parser.client_obj.basic_client_body import Jt808ClientBasicBody
 
 
 @dataclass
-class JT808MsgBodyProperty:
+class JT808MsgBodyProperty(Jt808ClientBasicBody):
     """
     消息体属性
     """
@@ -41,9 +42,12 @@ class JT808MsgBodyProperty:
         """
         return struct.pack("> H", self.to_int())
 
+    def __str__(self) -> str:
+        return f"消息体长度: {self.msg_body_length}, 数据加密: {self.data_encryption}, 子包标志: {self.subcontracting_flag}, 版本标志: {self.version_flag}, 保留: {self.other}"
+
 
 @dataclass
-class JT808HeaderInfo:
+class JT808HeaderInfo(Jt808ClientBasicBody):
     """
     消息头信息
     """
@@ -80,15 +84,16 @@ class JT808HeaderInfo:
             data.extend(basic_header_2)
         return data
 
+    def __str__(self) -> str:
+        return (f"消息ID: {self.msg_id}, "
+                f"消息体属性: ["
+                f"{self.body_property}"
+                f"],"
+                f"版本号: {self.version}, "
+                f"手机号: {self.phone_number.hex()}, "
+                f"消息序列号: {self.msg_sequence_number}, "
+                f"消息包总数: {self.msg_package_total if self.msg_package_total is not None else '无'}, "
+                f"消息包当前号: {self.msg_package_current_number if self.msg_package_current_number is not None else '无'}")
 
-@dataclass
-class Jt808MsgInfo:
-    """
-    JT808消息信息
-    """
-    sign_byte_head: bytes  # 标志位(头)
-    header_bytes: bytes  # 消息头
-    data_body_bytes: bytes  # 消息体
-    check_byte: bytes  # 校验位
-    sign_byte_tail: bytes  # 校验位(尾)
+
 

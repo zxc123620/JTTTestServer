@@ -3,8 +3,10 @@
 # Time: 2026/9/8 17:57
 # Author:zhouxiaochuan
 # Description:
+from geographiclib.geodesic import Geodesic
 
-class DataFunction:
+class FunctionTools:
+
     @staticmethod
     def de_escape(data: bytes):
         """
@@ -57,3 +59,21 @@ class DataFunction:
         for i in data:
             check_byte ^= i
         return check_byte
+
+
+    @staticmethod
+    def distance_vincenty( lat1, lon1, lat2, lon2):
+        """
+        计算Vincenty距离，厘米级精度
+        Args:
+            lat1: 纬度1 单位：十进制度
+            lon1: 经度1 单位：十进制度
+            lat2: 纬度2 单位：十进制度
+            lon2: 经度2 单位：十进制度
+
+        Returns:
+            距离（米）
+
+        """
+        result = Geodesic.WGS84.Inverse(lat1, lon1, lat2, lon2)
+        return result['s12']  # 距离（米）

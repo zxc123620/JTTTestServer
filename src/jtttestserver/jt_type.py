@@ -11,3 +11,10 @@ class Jt808ReplyType(Enum):
     FAIL = 1
     ERROR = 2
     UNKNOWN = 3
+
+class QueueType(Enum):
+    """
+    队列类型
+    """
+    RECV = "recv"
+    SEND = "send"

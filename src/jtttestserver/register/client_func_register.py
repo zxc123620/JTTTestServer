@@ -3,11 +3,5 @@
 # Time: 2026/9/9 16:54
 # Author:zhouxiaochuan
 # Description:
-from jtttestserver.register.func_code_register import MsgBodyRegister
+from jtttestserver.register.msg_body_register import Jt808ClientMsgBodyRegister
 
-
-class ClientMsgBodyRegister(MsgBodyRegister):
-
-    @classmethod
-    def parser_msg_body(cls, data: bytes):
-        pass
