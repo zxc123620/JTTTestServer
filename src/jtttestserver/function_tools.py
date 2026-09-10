@@ -3,6 +3,9 @@
 # Time: 2026/9/8 17:57
 # Author:zhouxiaochuan
 # Description:
+import logging
+from asyncio import log
+
 from geographiclib.geodesic import Geodesic
 
 class FunctionTools:
@@ -60,6 +63,22 @@ class FunctionTools:
             check_byte ^= i
         return check_byte
 
+    @classmethod
+    def check_valid(cls, raw_data: bytes):
+        """
+        校验数据是否有效
+        Args:
+            raw_data: 数据 bytes
+
+        Returns:
+
+        """
+        raw_check_byte = raw_data[-1] # 校验位
+        raw_check_data_body = raw_data[:-1] # 校验数据体
+        check_byte = cls.generate_check_byte(raw_check_data_body)
+        result = check_byte == raw_check_byte
+        logging.info(f"校验结果: {check_byte}(平台计算) == {raw_check_byte}(原始校验) -> {result}")
+        return result
 
     @staticmethod
     def distance_vincenty( lat1, lon1, lat2, lon2):
